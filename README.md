@@ -107,7 +107,7 @@ Build 42 automatically reads the `42/` subfolder; Build 41 reads the root.
 
 | File | Responsibility |
 |---|---|
-| `ADHD_Trait.lua` | Registers the trait (cost 0) with Fitness/Sprinting/Nimble XP boosts — these perk levels are the guaranteed movement-speed buff via the game's own speed formulas. |
+| `ADHD_Trait.lua` | Registers the trait (cost -6, so it lists under **Bad Traits** and grants points; flip the sign for a costly Good trait) with Fitness/Sprinting/Nimble XP boosts — these perk levels are the guaranteed movement-speed buff via the game's own speed formulas. |
 | `ADHD_ActionSpeed.lua` | Wraps `ISBaseTimedAction:adjustMaxTime` to divide every timed action's duration by 3 (skips indefinite actions). |
 | `ADHD_MoveSpeed.lua` | Best-effort direct `setRunSpeedModifier` bump, guarded so it's harmless if a build lacks the API. |
 | `ADHD_IdleDeath.lua` | The idle timer: reads `ADHD.KillSeconds`, tracks activity, shows the warning, and zombifies on timeout. |
