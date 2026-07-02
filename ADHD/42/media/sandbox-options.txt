@@ -1,5 +1,11 @@
 VERSION = 1,
 
+option ADHD.KillSeconds
+{
+	type = integer, min = 1, max = 600, default = 15,
+	page = ADHD, translation = ADHD_KillSeconds,
+}
+
 option ADHD.ForcedUsernames
 {
 	type = string, default = ,

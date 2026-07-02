@@ -1,10 +1,15 @@
 -- Stand still for 15 real seconds with the ADHD trait -> die infected and reanimate.
 -- "Active" = moved, has a queued/running timed action, or is aiming/attacking.
-local WARN_MS = 10000
-local KILL_MS = 15000
 local CHECK_MS = 250
 -- a frame gap bigger than this means pause/loading/fast-forward; don't count it as idle time
 local GAP_RESET_MS = 2000
+local WARN_LEAD_MS = 5000 -- show the countdown warning for the final N ms before death
+
+-- kill time is sandbox-configurable (seconds); default 15 if unset
+local function getKillMs()
+	local secs = SandboxVars.ADHD and SandboxVars.ADHD.KillSeconds or 15
+	return secs * 1000
+end
 
 local state = {} -- [playerNum] = { x, y, lastActive, lastCheck }
 
@@ -54,11 +59,12 @@ Events.OnPlayerUpdate.Add(function(player)
 	end
 	s.x, s.y = player:getX(), player:getY()
 
+	local killMs = getKillMs()
 	local idle = now - s.lastActive
-	if idle >= KILL_MS then
+	if idle >= killMs then
 		s.lastActive = now
 		zombify(player)
-	elseif idle >= WARN_MS then
-		player:setHaloNote("MOVE! " .. math.ceil((KILL_MS - idle) / 1000), 255, 60, 60, 300)
+	elseif idle >= killMs - WARN_LEAD_MS then
+		player:setHaloNote("MOVE! " .. math.ceil((killMs - idle) / 1000), 255, 60, 60, 300)
 	end
 end)
