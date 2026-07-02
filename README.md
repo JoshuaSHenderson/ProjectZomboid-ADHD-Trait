@@ -115,6 +115,39 @@ Build 42 automatically reads the `42/` subfolder; Build 41 reads the root.
 
 ---
 
+## Uploading to the Steam Workshop
+
+The Workshop uploader requires the mod nested inside `Contents/mods/`. Its
+`Contents/` folder may contain **only** `mods`, `buildings`, or `creative` — any
+other folder name (e.g. `media`, `42`, `mod.info` placed directly in `Contents`)
+triggers:
+
+> the following folders are the only ones permitted in contents: buildings/creative/mods
+
+Build the upload folder like this (from a clone of this repo):
+
+```powershell
+$dst = "$env:USERPROFILE\Zomboid\Workshop\ADHD"
+New-Item -ItemType Directory -Force "$dst\Contents\mods" | Out-Null
+Copy-Item -Recurse -Force ".\ADHD" "$dst\Contents\mods\ADHD"
+Copy-Item -Force ".\workshop.txt" "$dst\workshop.txt"
+# optional: put a 256x256+ Preview.png next to workshop.txt
+```
+
+Resulting layout:
+
+```
+Zomboid\Workshop\ADHD\
+├── workshop.txt
+├── Preview.png            (optional)
+└── Contents\
+    └── mods\
+        └── ADHD\          ← mod.info + media\ + 42\
+```
+
+Then in-game: **Main Menu → Workshop → the ADHD item → Upload**. Leave
+`id=` blank in `workshop.txt` for the first upload; Steam fills it in after.
+
 ## Known limitations
 
 - Not yet verified in-game on either build; treat as beta. Creation-UI internals

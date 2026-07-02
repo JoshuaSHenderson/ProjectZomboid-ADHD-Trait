@@ -1,0 +1,12 @@
+version=1
+id=
+title=ADHD Trait
+description=Adds an ADHD character trait to Project Zomboid (Build 41 and Build 42).
+description=
+description=- All timed actions complete about 3x faster, and you move faster.
+description=- Stand still too long and you drop dead and reanimate as a zombie. The idle limit defaults to 15 seconds and is configurable in Sandbox Options. A red MOVE! countdown warns you for the final 5 seconds.
+description=- Admins can force the trait onto specific players (or everyone) from Sandbox Options.
+description=
+description=Full docs: https://github.com/JoshuaSHenderson/ProjectZomboid-ADHD-Trait
+tags=
+visibility=public
