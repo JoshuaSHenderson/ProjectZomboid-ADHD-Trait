@@ -1,0 +1,7 @@
+VERSION = 1,
+
+option ADHD.ForcedUsernames
+{
+	type = string, default = ,
+	page = ADHD, translation = ADHD_ForcedUsernames,
+}

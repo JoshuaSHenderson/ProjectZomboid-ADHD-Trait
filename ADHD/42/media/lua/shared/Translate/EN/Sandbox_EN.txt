@@ -1,0 +1,5 @@
+Sandbox_EN = {
+	Sandbox_ADHD = "ADHD",
+	Sandbox_ADHD_ForcedUsernames = "Forced usernames",
+	Sandbox_ADHD_ForcedUsernames_tooltip = "Comma-separated list of usernames forced to take the ADHD trait at character creation. Use * to force everyone. Leave empty to make the trait optional. (In singleplayer only * works.)",
+}

@@ -1,0 +1,4 @@
+UI_EN = {
+	UI_trait_ADHD = "ADHD",
+	UI_trait_ADHDDesc = "Hyperfocus lets you finish any task three times faster and keeps you quick on your feet. But stillness is death: stand idle for 15 seconds and your heart gives out... and you get back up.",
+}
