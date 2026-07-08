@@ -5,5 +5,5 @@ Sandbox_EN = {
 	Sandbox_ADHD_KillSeconds = "Seconds standing still before death",
 	Sandbox_ADHD_KillSeconds_tooltip = "How many real seconds an ADHD character can stand still before dying and reanimating. A loud alarm and panic countdown kick in for the last 5 seconds. Default 15.",
 	Sandbox_ADHD_ForcedUsernames = "Forced usernames",
-	Sandbox_ADHD_ForcedUsernames_tooltip = "Comma-separated list of usernames forced to take the ADHD trait at character creation. Use * to force everyone. Leave empty to make the trait optional. (In singleplayer only * works.)",
+	Sandbox_ADHD_ForcedUsernames_tooltip = "Comma-separated list of usernames forced to take the ADHD trait at character creation. Use * to force everyone. Leave empty to make the trait optional. (In singleplayer any non-empty value forces the trait.)",
 }

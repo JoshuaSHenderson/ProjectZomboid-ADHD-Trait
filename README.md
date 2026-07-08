@@ -65,12 +65,14 @@ ADHD.ForcedUsernames = "*"            -- everyone
 ADHD.ForcedUsernames = ""             -- nobody; trait is optional
 ```
 
-For matched players the trait is added and locked in the creation screen, with a
-guaranteed backstop that re-applies it when the character spawns even if the
-creation UI differs between builds.
+For matched players the trait is auto-selected in the creation screen through
+the game's own trait-selection code (points and mutual exclusions included) and
+re-selected every frame — deselecting or resetting the build just snaps it
+back. A guaranteed backstop re-applies it when the character spawns even if
+the creation UI differs between builds.
 
-> **Single-player note:** username matching relies on the online username, which
-> doesn't exist in single-player, so only `*` takes effect offline. In
+> **Single-player note:** there is no online username offline, so **any
+> non-empty value** (a name, or `*`) forces the trait in single-player. In
 > multiplayer, exact names and `*` both work.
 
 ---
@@ -118,7 +120,7 @@ Build 42 automatically reads the `42/` subfolder; Build 41 reads the root.
 | `ADHD_ActionSpeed.lua` | Wraps `ISBaseTimedAction:adjustMaxTime` to divide every timed action's duration by `ADHD.ActionSpeedMultiplier` (skips indefinite actions). |
 | `ADHD_MoveSpeed.lua` | Best-effort direct `setRunSpeedModifier` bump, guarded so it's harmless if a build lacks the API. |
 | `ADHD_IdleDeath.lua` | The idle timer: reads `ADHD.KillSeconds`, tracks activity, plays the alarm (vanilla `AlarmClockRingingLoop`, stopped when you move), shows the panic countdown, and zombifies on timeout. |
-| `ADHD_ForceTrait.lua` | Reads `ADHD.ForcedUsernames`; locks the trait in the creation screen and enforces it on spawn. |
+| `ADHD_ForceTrait.lua` | Reads `ADHD.ForcedUsernames`; auto-selects the trait in the creation screen every frame (via vanilla `addTrait`) and enforces it on spawn. |
 
 ---
 

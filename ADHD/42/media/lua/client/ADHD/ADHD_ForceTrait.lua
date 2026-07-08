@@ -1,14 +1,20 @@
 -- Force the ADHD trait on players listed in SandboxVars.ADHD.ForcedUsernames.
 -- Comma-separated usernames; "*" forces everyone; empty forces nobody.
+-- In singleplayer there is no online username, so ANY non-empty value forces
+-- the trait.
 -- Two layers:
---   1. Best-effort UI lock in the character creation screen (pcall-guarded;
---      creation UI internals differ between builds and may change).
+--   1. Creation-screen enforcement: every frame the screen renders, if the
+--      trait isn't selected, select it through the vanilla addTrait path
+--      (points, mutual exclusions and sorting all handled by vanilla code).
+--      Deselecting/resetting just re-adds it next frame, so the vanilla
+--      reset/randomize loops can never deadlock against us.
 --   2. Guaranteed backstop on OnCreatePlayer.
 
 local function isForced()
 	local raw = SandboxVars.ADHD and SandboxVars.ADHD.ForcedUsernames or ""
 	if raw == "" then return false end
-	local username = isClient() and getOnlineUsername() or nil
+	if not isClient() then return true end -- singleplayer: no username to match
+	local username = getOnlineUsername()
 	for name in string.gmatch(raw, "([^,]+)") do
 		name = name:trim()
 		if name == "*" then return true end
@@ -17,34 +23,30 @@ local function isForced()
 	return false
 end
 
--- Layer 1: pre-select and lock the trait in the creation screen (best effort).
--- ponytail: pcall-guarded because listbox internals vary between B41 and B42;
--- if this breaks on a build, the OnCreatePlayer backstop below still enforces it.
-if CharacterCreationProfession then
-	local origInitialise = CharacterCreationProfession.initialise
-	function CharacterCreationProfession:initialise(...)
-		origInitialise(self, ...)
-		if not isForced() then return end
-		pcall(function()
-			for i = 1, #self.listboxTrait.items do
-				local it = self.listboxTrait.items[i]
-				if it.item and it.item.getType and it.item:getType() == "ADHD" then
-					self.listboxTraitSelected:addItem(it.text, it.item)
-					self.listboxTrait:removeItem(it.text)
-					break
-				end
-			end
-		end)
+-- Layer 1: creation-screen enforcement.
+-- ADHD has a negative cost, so it lives in listboxBadTrait.
+local function findADHD(list)
+	if not list or not list.items then return nil end
+	for i = 1, #list.items do
+		local it = list.items[i]
+		if it.item and it.item.getType and it.item:getType() == "ADHD" then
+			return i
+		end
 	end
+	return nil
+end
 
-	-- block deselecting the forced trait
-	local origDblClick = CharacterCreationProfession.onDblClickTraitSelected
-	if origDblClick then
-		function CharacterCreationProfession:onDblClickTraitSelected(item, ...)
-			if isForced() and item and item.getType and item:getType() == "ADHD" then
-				return
-			end
-			return origDblClick(self, item, ...)
+if CharacterCreationProfession and CharacterCreationProfession.prerender then
+	local origPrerender = CharacterCreationProfession.prerender
+	function CharacterCreationProfession:prerender(...)
+		origPrerender(self, ...)
+		if not isForced() then return end
+		if findADHD(self.listboxTraitSelected) then return end -- already selected
+		local i = findADHD(self.listboxBadTrait)
+		if i then
+			self.listboxBadTrait.selected = i
+			self:addTrait(true)
+			self:checkXPBoost()
 		end
 	end
 end
