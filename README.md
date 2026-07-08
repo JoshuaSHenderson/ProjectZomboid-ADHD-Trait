@@ -5,11 +5,16 @@ inability to sit still.
 
 - **Everything is faster.** All timed actions (crafting, reading, foraging,
   ripping clothes, disassembling, everything routed through the game's timed
-  action system) complete about **3× faster**. You also move faster.
+  action system) complete faster — **3× by default, configurable 1–10× in
+  Sandbox Options**. You also move faster.
 - **Stillness kills.** Stand still too long and your character drops dead — and
   gets back up as a zombie. The idle limit defaults to **15 seconds** and is
-  configurable in Sandbox Options. A red **"MOVE!"** countdown warns you for the
-  final 5 seconds.
+  configurable in Sandbox Options. For the final 5 seconds a **loud ringing
+  alarm** blares and a red panicked countdown flashes over your head
+  ("no no no NO— I have to MOVE!" … "MOVE MOVE MOVE MOVE!!!").
+- **Visible trait.** The trait has its own lightning-bolt icon and shows up in
+  the character-creation trait list and on the in-game character info panel
+  alongside your other traits.
 - **Forceable.** Server admins can force the trait onto specific players (or
   everyone) from Sandbox Options — it appears pre-selected and locked in the
   character-creation screen.
@@ -46,7 +51,8 @@ or server `servertest_SandboxVars.lua`).
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| **Seconds standing still before death** (`ADHD.KillSeconds`) | integer, 1–600 | `15` | How many real seconds an ADHD character may stand still before dying and reanimating. The warning countdown shows for the final 5 seconds. |
+| **Action speed multiplier** (`ADHD.ActionSpeedMultiplier`) | double, 1.0–10.0 | `3.0` | How many times faster ADHD characters complete timed actions. `1` disables the speed-up. |
+| **Seconds standing still before death** (`ADHD.KillSeconds`) | integer, 1–600 | `15` | How many real seconds an ADHD character may stand still before dying and reanimating. The alarm + panic countdown run for the final 5 seconds. |
 | **Forced usernames** (`ADHD.ForcedUsernames`) | string | *(empty)* | Comma-separated list of usernames forced to take the ADHD trait at creation. `*` forces everyone. Empty means the trait is simply optional. |
 
 ### Forcing the trait
@@ -91,6 +97,7 @@ ADHD/
 ├── mod.info                       # Build 41 manifest
 ├── media/                         # Build 41 content
 │   ├── sandbox-options.txt
+│   ├── ui/Traits/trait_adhd.png   # 18x18 trait icon
 │   └── lua/
 │       ├── shared/Translate/EN/   # trait + sandbox strings
 │       └── client/ADHD/           # trait logic (5 files)
@@ -108,9 +115,9 @@ Build 42 automatically reads the `42/` subfolder; Build 41 reads the root.
 | File | Responsibility |
 |---|---|
 | `ADHD_Trait.lua` | Registers the trait (cost -6, so it lists under **Bad Traits** and grants points; flip the sign for a costly Good trait) with Fitness/Sprinting/Nimble XP boosts — these perk levels are the guaranteed movement-speed buff via the game's own speed formulas. |
-| `ADHD_ActionSpeed.lua` | Wraps `ISBaseTimedAction:adjustMaxTime` to divide every timed action's duration by 3 (skips indefinite actions). |
+| `ADHD_ActionSpeed.lua` | Wraps `ISBaseTimedAction:adjustMaxTime` to divide every timed action's duration by `ADHD.ActionSpeedMultiplier` (skips indefinite actions). |
 | `ADHD_MoveSpeed.lua` | Best-effort direct `setRunSpeedModifier` bump, guarded so it's harmless if a build lacks the API. |
-| `ADHD_IdleDeath.lua` | The idle timer: reads `ADHD.KillSeconds`, tracks activity, shows the warning, and zombifies on timeout. |
+| `ADHD_IdleDeath.lua` | The idle timer: reads `ADHD.KillSeconds`, tracks activity, plays the alarm (vanilla `AlarmClockRingingLoop`, stopped when you move), shows the panic countdown, and zombifies on timeout. |
 | `ADHD_ForceTrait.lua` | Reads `ADHD.ForcedUsernames`; locks the trait in the creation screen and enforces it on spawn. |
 
 ---

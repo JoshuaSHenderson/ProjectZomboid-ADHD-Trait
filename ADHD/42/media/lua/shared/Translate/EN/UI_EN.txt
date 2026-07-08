@@ -1,4 +1,4 @@
 UI_EN = {
 	UI_trait_ADHD = "ADHD",
-	UI_trait_ADHDDesc = "Hyperfocus lets you finish any task three times faster and keeps you quick on your feet. But stillness is death: stand idle for 15 seconds and your heart gives out... and you get back up.",
+	UI_trait_ADHDDesc = "Your brain runs in permanent overdrive — every task flies by several times faster, always light on your feet. But standing still? No. NO. Can't. Won't. The second you stop, your skin starts crawling, your heart starts slamming, an alarm screams in your head — and a few seconds later it just gives out. And then you get back up. KEEP. MOVING.",
 }

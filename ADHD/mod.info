@@ -1,3 +1,3 @@
 name=ADHD
 id=ADHD
-description=Adds the ADHD trait: complete all actions ~3x faster and move faster, but stand still for 15 seconds and you die and turn. Sandbox option to force the trait on listed usernames (* = everyone).
+description=Adds the ADHD trait: complete all actions ~3x faster and move faster, but stand still too long (configurable, default 15s) and you die and turn. Loud alarm and panic countdown warn you. Sandbox option to force the trait on listed usernames (* = everyone).
