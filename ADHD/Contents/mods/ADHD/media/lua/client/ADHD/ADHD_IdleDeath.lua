@@ -1,11 +1,15 @@
--- Stand still too long with the ADHD trait -> die infected and reanimate.
+-- Stand still too long with the ADHD trait -> die (zombify or explode).
 -- "Active" = moved, has a queued/running timed action, or is aiming/attacking.
 local CHECK_MS = 250
 -- a frame gap bigger than this means pause/loading/fast-forward; don't count it as idle time
 local GAP_RESET_MS = 2000
 
--- Vanilla FMOD sound (loops until stopped) — loud, unmistakable, no custom audio assets needed.
+-- Vanilla FMOD sounds — loud, unmistakable, no custom audio assets needed.
+-- Alarm loops until stopped (local-only emitter, it's a warning for THIS player);
+-- scream/explosion go through player:playSound so nearby players hear them in MP.
 local ALARM_SOUND = "AlarmClockRingingLoop"
+local SCREAM_SOUND = "MetaScream"
+local EXPLODE_SOUND = "BurnedObjectExploded"
 
 -- One line per second remaining; the character audibly losing it.
 local PANIC_LINES = {
@@ -28,6 +32,11 @@ local function getWarnMs()
 	return secs * 1000
 end
 
+-- 1 = zombify (default), 2 = explode
+local function getDeathMode()
+	return SandboxVars.ADHD and SandboxVars.ADHD.DeathMode or 1
+end
+
 local state = {} -- [playerNum] = { x, y, lastActive, lastCheck, alarm }
 
 local function isActive(player, s)
@@ -44,6 +53,14 @@ local function isActive(player, s)
 	return false
 end
 
+-- alarm + scream + shout emote (arms up, head back — closest vanilla anim to
+-- freaking out; a true head-grab would need custom animation assets)
+local function startFreakout(player, s)
+	s.alarm = player:getEmitter():playSound(ALARM_SOUND)
+	player:playSound(SCREAM_SOUND)
+	pcall(function() player:playEmote("shout") end) -- emotes are MP-synced
+end
+
 local function stopAlarm(player, s)
 	if s.alarm then
 		player:getEmitter():stopSound(s.alarm)
@@ -58,11 +75,26 @@ local function zombify(player)
 	player:Kill(player)
 end
 
+-- Harms ONLY this player: no real explosion object, no fire, no area damage —
+-- just the bang, a gore splatter, and a corpse that stays down (not infected).
+local function explode(player)
+	player:playSound(EXPLODE_SOUND)
+	pcall(function()
+		for _ = 1, 8 do
+			player:splatBloodFloorBig(0.6)
+		end
+	end)
+	player:Kill(player)
+end
+
 Events.OnCreatePlayer.Add(function(playerNum, player)
 	state[playerNum] = nil
 end)
 
 Events.OnPlayerUpdate.Add(function(player)
+	-- only ever tick for players controlled on THIS machine; never touch
+	-- remote players' characters (kills/sounds on them would desync MP)
+	if not player:isLocalPlayer() then return end
 	if player:isDead() or player:isGodMod() or not player:HasTrait("ADHD") then return end
 
 	local now = getTimestampMs()
@@ -89,10 +121,14 @@ Events.OnPlayerUpdate.Add(function(player)
 	if idle >= killMs then
 		s.lastActive = now
 		stopAlarm(player, s)
-		zombify(player)
+		if getDeathMode() == 2 then
+			explode(player)
+		else
+			zombify(player)
+		end
 	elseif idle >= killMs - getWarnMs() then
 		if not s.alarm then
-			s.alarm = player:getEmitter():playSound(ALARM_SOUND)
+			startFreakout(player, s)
 		end
 		local secsLeft = math.ceil((killMs - idle) / 1000)
 		local line = PANIC_LINES[secsLeft] or PANIC_LINES[5]

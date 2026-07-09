@@ -7,11 +7,14 @@ inability to sit still.
   ripping clothes, disassembling, everything routed through the game's timed
   action system) complete faster — **3× by default, configurable 1–10× in
   Sandbox Options**. You also move faster.
-- **Stillness kills.** Stand still too long and your character drops dead — and
-  gets back up as a zombie. The idle limit defaults to **15 seconds** and is
-  configurable in Sandbox Options. For the final seconds (default 5,
-  configurable) a **loud ringing alarm** blares and a red panicked countdown
-  flashes over your head
+- **Stillness kills.** Stand still too long and your character drops dead —
+  and, by default, gets back up as a zombie. A sandbox option switches the
+  death to an **explosion** instead (bang + gore, corpse stays down) — it harms
+  **only the ADHD player**, never zombies or bystanders. The idle limit
+  defaults to **15 seconds** and is configurable in Sandbox Options.
+- **You'll hear it coming.** For the final seconds (default 5, configurable)
+  your character **screams and shouts to the sky**, a **loud ringing alarm**
+  blares, and a red panicked countdown flashes over your head
   ("no no no NO— I have to MOVE!" … "MOVE MOVE MOVE MOVE!!!").
 - **Visible trait.** The trait has its own lightning-bolt icon and shows up in
   the character-creation trait list and on the in-game character info panel
@@ -55,6 +58,7 @@ or server `servertest_SandboxVars.lua`).
 | **Action speed multiplier** (`ADHD.ActionSpeedMultiplier`) | double, 1.0–10.0 | `3.0` | How many times faster ADHD characters complete timed actions. `1` disables the speed-up. |
 | **Seconds standing still before death** (`ADHD.KillSeconds`) | integer, 1–600 | `15` | How many real seconds an ADHD character may stand still before dying and reanimating. |
 | **Seconds of warning before death** (`ADHD.WarnSeconds`) | integer, 1–60 | `5` | How many seconds before death the loud alarm and panic countdown kick in. |
+| **What happens when the timer runs out** (`ADHD.DeathMode`) | enum | `Zombify` | `Zombify`: die fully infected and reanimate. `Explode`: bang + gore, corpse stays down. Harms only the ADHD player. |
 | **Forced usernames** (`ADHD.ForcedUsernames`) | string | *(empty)* | Comma-separated list of usernames forced to take the ADHD trait at creation. `*` forces everyone. Empty means the trait is simply optional. |
 
 ### Forcing the trait
@@ -125,10 +129,10 @@ Build 42 automatically reads the `42/` subfolder; Build 41 reads the root.
 
 | File | Responsibility |
 |---|---|
-| `ADHD_Trait.lua` | Registers the trait (cost -6, so it lists under **Bad Traits** and grants points; flip the sign for a costly Good trait) with Fitness/Sprinting/Nimble XP boosts — these perk levels are the guaranteed movement-speed buff via the game's own speed formulas. |
+| `ADHD_Trait.lua` (in `lua/shared/`) | Registers the trait (cost -6, so it lists under **Bad Traits** and grants points; flip the sign for a costly Good trait) with Fitness/Sprinting/Nimble XP boosts — these perk levels are the guaranteed movement-speed buff via the game's own speed formulas. Lives in `shared/` so dedicated servers register it too. |
 | `ADHD_ActionSpeed.lua` | Wraps `ISBaseTimedAction:adjustMaxTime` to divide every timed action's duration by `ADHD.ActionSpeedMultiplier` (skips indefinite actions). |
 | `ADHD_MoveSpeed.lua` | Best-effort direct `setRunSpeedModifier` bump, guarded so it's harmless if a build lacks the API. |
-| `ADHD_IdleDeath.lua` | The idle timer: reads `ADHD.KillSeconds`, tracks activity, plays the alarm (vanilla `AlarmClockRingingLoop`, stopped when you move), shows the panic countdown, and zombifies on timeout. |
+| `ADHD_IdleDeath.lua` | The idle timer: tracks activity, then screams (`MetaScream`), shouts (synced emote), rings the alarm (`AlarmClockRingingLoop`, stopped when you move) and shows the panic countdown; on timeout zombifies or explodes per `ADHD.DeathMode`. Only ever ticks for players controlled on the local machine. |
 | `ADHD_ForceTrait.lua` | Reads `ADHD.ForcedUsernames`; auto-selects the trait in the creation screen every frame (via vanilla `addTrait`) and enforces it on spawn. |
 
 ---

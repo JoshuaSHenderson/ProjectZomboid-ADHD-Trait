@@ -6,6 +6,10 @@ Sandbox_EN = {
 	Sandbox_ADHD_KillSeconds_tooltip = "How many real seconds an ADHD character can stand still before dying and reanimating. Default 15.",
 	Sandbox_ADHD_WarnSeconds = "Seconds of warning before death",
 	Sandbox_ADHD_WarnSeconds_tooltip = "How many seconds before death the loud alarm and panic countdown kick in. Default 5.",
+	Sandbox_ADHD_DeathMode = "What happens when the timer runs out",
+	Sandbox_ADHD_DeathMode_tooltip = "Zombify: die fully infected and get back up as a zombie. Explode: go out with a bang — harms only the ADHD player, the corpse stays down.",
+	Sandbox_ADHD_DeathMode_option1 = "Zombify",
+	Sandbox_ADHD_DeathMode_option2 = "Explode",
 	Sandbox_ADHD_ForcedUsernames = "Forced usernames",
 	Sandbox_ADHD_ForcedUsernames_tooltip = "Comma-separated list of usernames forced to take the ADHD trait at character creation. Use * to force everyone. Leave empty to make the trait optional. (In singleplayer any non-empty value forces the trait.)",
 }

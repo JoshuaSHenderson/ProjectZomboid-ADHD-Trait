@@ -18,6 +18,12 @@ option ADHD.WarnSeconds
 	page = ADHD, translation = ADHD_WarnSeconds,
 }
 
+option ADHD.DeathMode
+{
+	type = enum, numValues = 2, default = 1,
+	page = ADHD, translation = ADHD_DeathMode,
+}
+
 option ADHD.ForcedUsernames
 {
 	type = string, default = ,

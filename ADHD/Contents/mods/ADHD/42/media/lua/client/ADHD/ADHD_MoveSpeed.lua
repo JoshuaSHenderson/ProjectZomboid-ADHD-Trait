@@ -10,6 +10,7 @@ Events.OnCreatePlayer.Add(function(playerNum, player)
 end)
 
 Events.OnPlayerUpdate.Add(function(player)
+	if not player:isLocalPlayer() then return end -- never touch remote players in MP
 	local num = player:getPlayerNum()
 	if tried[num] then return end
 	tried[num] = true
