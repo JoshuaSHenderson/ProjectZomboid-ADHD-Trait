@@ -3,7 +3,9 @@ Sandbox_EN = {
 	Sandbox_ADHD_ActionSpeedMultiplier = "Action speed multiplier",
 	Sandbox_ADHD_ActionSpeedMultiplier_tooltip = "How many times faster ADHD characters complete timed actions (crafting, reading, foraging, etc.). 1 = normal speed. Default 3.",
 	Sandbox_ADHD_KillSeconds = "Seconds standing still before death",
-	Sandbox_ADHD_KillSeconds_tooltip = "How many real seconds an ADHD character can stand still before dying and reanimating. A loud alarm and panic countdown kick in for the last 5 seconds. Default 15.",
+	Sandbox_ADHD_KillSeconds_tooltip = "How many real seconds an ADHD character can stand still before dying and reanimating. Default 15.",
+	Sandbox_ADHD_WarnSeconds = "Seconds of warning before death",
+	Sandbox_ADHD_WarnSeconds_tooltip = "How many seconds before death the loud alarm and panic countdown kick in. Default 5.",
 	Sandbox_ADHD_ForcedUsernames = "Forced usernames",
 	Sandbox_ADHD_ForcedUsernames_tooltip = "Comma-separated list of usernames forced to take the ADHD trait at character creation. Use * to force everyone. Leave empty to make the trait optional. (In singleplayer any non-empty value forces the trait.)",
 }

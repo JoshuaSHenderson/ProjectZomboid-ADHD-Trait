@@ -3,7 +3,6 @@
 local CHECK_MS = 250
 -- a frame gap bigger than this means pause/loading/fast-forward; don't count it as idle time
 local GAP_RESET_MS = 2000
-local WARN_LEAD_MS = 5000 -- panic countdown + alarm for the final N ms before death
 
 -- Vanilla FMOD sound (loops until stopped) — loud, unmistakable, no custom audio assets needed.
 local ALARM_SOUND = "AlarmClockRingingLoop"
@@ -20,6 +19,12 @@ local PANIC_LINES = {
 -- kill time is sandbox-configurable (seconds); default 15 if unset
 local function getKillMs()
 	local secs = SandboxVars.ADHD and SandboxVars.ADHD.KillSeconds or 15
+	return secs * 1000
+end
+
+-- warning lead time (alarm + panic countdown) is sandbox-configurable; default 5s
+local function getWarnMs()
+	local secs = SandboxVars.ADHD and SandboxVars.ADHD.WarnSeconds or 5
 	return secs * 1000
 end
 
@@ -85,7 +90,7 @@ Events.OnPlayerUpdate.Add(function(player)
 		s.lastActive = now
 		stopAlarm(player, s)
 		zombify(player)
-	elseif idle >= killMs - WARN_LEAD_MS then
+	elseif idle >= killMs - getWarnMs() then
 		if not s.alarm then
 			s.alarm = player:getEmitter():playSound(ALARM_SOUND)
 		end

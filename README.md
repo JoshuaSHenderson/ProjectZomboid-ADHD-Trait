@@ -9,8 +9,9 @@ inability to sit still.
   Sandbox Options**. You also move faster.
 - **Stillness kills.** Stand still too long and your character drops dead — and
   gets back up as a zombie. The idle limit defaults to **15 seconds** and is
-  configurable in Sandbox Options. For the final 5 seconds a **loud ringing
-  alarm** blares and a red panicked countdown flashes over your head
+  configurable in Sandbox Options. For the final seconds (default 5,
+  configurable) a **loud ringing alarm** blares and a red panicked countdown
+  flashes over your head
   ("no no no NO— I have to MOVE!" … "MOVE MOVE MOVE MOVE!!!").
 - **Visible trait.** The trait has its own lightning-bolt icon and shows up in
   the character-creation trait list and on the in-game character info panel
@@ -52,7 +53,8 @@ or server `servertest_SandboxVars.lua`).
 | Option | Type | Default | Description |
 |---|---|---|---|
 | **Action speed multiplier** (`ADHD.ActionSpeedMultiplier`) | double, 1.0–10.0 | `3.0` | How many times faster ADHD characters complete timed actions. `1` disables the speed-up. |
-| **Seconds standing still before death** (`ADHD.KillSeconds`) | integer, 1–600 | `15` | How many real seconds an ADHD character may stand still before dying and reanimating. The alarm + panic countdown run for the final 5 seconds. |
+| **Seconds standing still before death** (`ADHD.KillSeconds`) | integer, 1–600 | `15` | How many real seconds an ADHD character may stand still before dying and reanimating. |
+| **Seconds of warning before death** (`ADHD.WarnSeconds`) | integer, 1–60 | `5` | How many seconds before death the loud alarm and panic countdown kick in. |
 | **Forced usernames** (`ADHD.ForcedUsernames`) | string | *(empty)* | Comma-separated list of usernames forced to take the ADHD trait at creation. `*` forces everyone. Empty means the trait is simply optional. |
 
 ### Forcing the trait
@@ -81,7 +83,8 @@ the creation UI differs between builds.
 
 ### From a local copy
 
-Copy the `ADHD` folder into your Zomboid mods directory:
+Copy the **inner** mod folder (`ADHD/Contents/mods/ADHD`) into your Zomboid
+mods directory:
 
 ```
 %USERPROFILE%\Zomboid\mods\ADHD\
@@ -92,20 +95,26 @@ Then enable **ADHD** in the in-game Mods menu, and add it to your server's
 
 ### Folder layout
 
-The mod ships both build layouts in one package:
+The repo's `ADHD/` folder is shaped exactly like a Steam Workshop item, with
+both build layouts inside the mod:
 
 ```
-ADHD/
-├── mod.info                       # Build 41 manifest
-├── media/                         # Build 41 content
-│   ├── sandbox-options.txt
-│   ├── ui/Traits/trait_adhd.png   # 18x18 trait icon
-│   └── lua/
-│       ├── shared/Translate/EN/   # trait + sandbox strings
-│       └── client/ADHD/           # trait logic (5 files)
-└── 42/
-    ├── mod.info                   # Build 42 manifest
-    └── media/                     # Build 42 content (mirror of the above)
+ADHD/                                  ← Workshop item folder
+├── workshop.txt                       # Workshop metadata (title/description/tags)
+├── preview.png                        # 256x256 Workshop thumbnail
+└── Contents/
+    └── mods/
+        └── ADHD/                      ← the actual mod
+            ├── mod.info               # Build 41 manifest
+            ├── media/                 # Build 41 content
+            │   ├── sandbox-options.txt
+            │   ├── ui/Traits/trait_adhd.png   # 18x18 trait icon
+            │   └── lua/
+            │       ├── shared/Translate/EN/   # trait + sandbox strings
+            │       └── client/ADHD/           # trait logic (5 files)
+            └── 42/
+                ├── mod.info           # Build 42 manifest
+                └── media/             # Build 42 content (mirror of the above)
 ```
 
 Build 42 automatically reads the `42/` subfolder; Build 41 reads the root.
@@ -133,25 +142,11 @@ triggers:
 
 > the following folders are the only ones permitted in contents: buildings/creative/mods
 
-Build the upload folder like this (from a clone of this repo):
+The repo's `ADHD/` folder is already in the uploader's expected shape, so the
+upload folder is a straight copy (from a clone of this repo):
 
 ```powershell
-$dst = "$env:USERPROFILE\Zomboid\Workshop\ADHD"
-New-Item -ItemType Directory -Force "$dst\Contents\mods" | Out-Null
-Copy-Item -Recurse -Force ".\ADHD" "$dst\Contents\mods\ADHD"
-Copy-Item -Force ".\workshop.txt" "$dst\workshop.txt"
-# optional: put a 256x256+ Preview.png next to workshop.txt
-```
-
-Resulting layout:
-
-```
-Zomboid\Workshop\ADHD\
-├── workshop.txt
-├── Preview.png            (optional)
-└── Contents\
-    └── mods\
-        └── ADHD\          ← mod.info + media\ + 42\
+Copy-Item -Recurse -Force ".\ADHD" "$env:USERPROFILE\Zomboid\Workshop\ADHD"
 ```
 
 Then in-game: **Main Menu → Workshop → the ADHD item → Upload**. Leave

@@ -12,6 +12,12 @@ option ADHD.KillSeconds
 	page = ADHD, translation = ADHD_KillSeconds,
 }
 
+option ADHD.WarnSeconds
+{
+	type = integer, min = 1, max = 60, default = 5,
+	page = ADHD, translation = ADHD_WarnSeconds,
+}
+
 option ADHD.ForcedUsernames
 {
 	type = string, default = ,
