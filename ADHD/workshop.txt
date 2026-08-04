@@ -27,8 +27,8 @@ description=[*][b]What happens when the timer runs out[/b] — Zombify (default)
 description=[*][b]Forced usernames[/b] — comma-separated list, * = everyone, empty = optional. In singleplayer any non-empty value forces the trait.
 description=[/list]
 description=
-description=Works on both [b]Build 41[/b] and [b]Build 42[/b].
+description=[b]Build 42 only.[/b] Build 41 is no longer supported.
 description=
 description=Full docs and source: https://github.com/JoshuaSHenderson/ProjectZomboid-ADHD-Trait
-tags=Build 41;Build 42;Traits
+tags=Build 42;Traits
 visibility=public

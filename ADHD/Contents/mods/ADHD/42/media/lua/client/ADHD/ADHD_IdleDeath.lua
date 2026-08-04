@@ -69,9 +69,9 @@ local function stopAlarm(player, s)
 end
 
 local function zombify(player)
-	local bd = player:getBodyDamage()
-	bd:setInfected(true)
-	bd:setInfectionLevel(99.9) -- dying fully Knox-infected reanimates via the vanilla pipeline
+	-- B42 dropped setInfectionLevel; being Knox-infected at death is what puts
+	-- the corpse through the vanilla reanimation pipeline.
+	player:getBodyDamage():setInfected(true)
 	player:Kill(player)
 end
 
@@ -95,7 +95,7 @@ Events.OnPlayerUpdate.Add(function(player)
 	-- only ever tick for players controlled on THIS machine; never touch
 	-- remote players' characters (kills/sounds on them would desync MP)
 	if not player:isLocalPlayer() then return end
-	if player:isDead() or player:isGodMod() or not player:HasTrait("ADHD") then return end
+	if player:isDead() or player:isGodMod() or not ADHD.hasTrait(player) then return end
 
 	local now = getTimestampMs()
 	local num = player:getPlayerNum()

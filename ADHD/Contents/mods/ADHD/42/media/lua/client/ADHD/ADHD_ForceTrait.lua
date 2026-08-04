@@ -15,8 +15,9 @@ local function isForced()
 	if raw == "" then return false end
 	if not isClient() then return true end -- singleplayer: no username to match
 	local username = getOnlineUsername()
-	for name in string.gmatch(raw, "([^,]+)") do
-		name = name:trim()
+	for entry in string.gmatch(raw, "([^,]+)") do
+		-- trim is a Java String method, not a Lua one, so do it with a pattern
+		local name = entry:match("^%s*(.-)%s*$")
 		if name == "*" then return true end
 		if username and name == username then return true end
 	end
@@ -25,11 +26,15 @@ end
 
 -- Layer 1: creation-screen enforcement.
 -- ADHD has a negative cost, so it lives in listboxBadTrait.
+-- List items hold CharacterTraitDefinitions. Registry entries are singletons, so
+-- comparing the CharacterTrait objects with == is the vanilla idiom (see
+-- CharacterCreationProfession:isTraitEnabled).
 local function findADHD(list)
-	if not list or not list.items then return nil end
+	local trait = ADHD.getTrait()
+	if not trait or not list or not list.items then return nil end
 	for i = 1, #list.items do
 		local it = list.items[i]
-		if it.item and it.item.getType and it.item:getType() == "ADHD" then
+		if it.item and it.item.getType and it.item:getType() == trait then
 			return i
 		end
 	end
@@ -45,21 +50,22 @@ if CharacterCreationProfession and CharacterCreationProfession.prerender then
 		local i = findADHD(self.listboxBadTrait)
 		if i then
 			self.listboxBadTrait.selected = i
-			self:addTrait(true)
+			-- B42 addTrait takes the trait definition itself, and repopulates the lists
+			self:addTrait(self.listboxBadTrait.items[i].item)
 			self:checkXPBoost()
 		end
 	end
 end
 
--- Layer 2: guaranteed backstop. Also apply the trait's perk boosts manually,
--- since traits added after creation don't grant their starting levels.
+-- Layer 2: guaranteed backstop. Also apply the trait's XP boosts, since traits
+-- added after creation don't grant their starting levels.
 Events.OnCreatePlayer.Add(function(playerNum, player)
-	if not isForced() or player:HasTrait("ADHD") then return end
-	player:getTraits():add("ADHD")
-	local boosts = { [Perks.Fitness] = 2, [Perks.Sprinting] = 3, [Perks.Nimble] = 3 }
-	for perk, levels in pairs(boosts) do
-		for _ = 1, levels do
-			player:LevelPerk(perk)
-		end
-	end
+	local trait = ADHD.getTrait()
+	if not trait or not isForced() or player:hasTrait(trait) then return end
+	player:getCharacterTraits():add(trait)
+	-- same order vanilla uses in ISPlayerStatsUI:onAddTrait; both calls take the
+	-- CharacterTrait, not the definition. Second arg is "is this trait being
+	-- removed", so false = grant the boosts.
+	player:modifyTraitXPBoost(trait, false)
+	SyncXp(player)
 end)

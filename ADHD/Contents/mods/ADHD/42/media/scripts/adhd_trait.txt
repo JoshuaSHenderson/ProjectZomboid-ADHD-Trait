@@ -1,0 +1,13 @@
+module ADHD
+{
+	character_trait_definition adhd:adhd
+	{
+		IsProfessionTrait = false,
+		DisabledInMultiplayer = false,
+		CharacterTrait = adhd:adhd,
+		Cost = -6,
+		UIName = UI_trait_adhd,
+		UIDescription = UI_trait_adhddesc,
+		XPBoosts = Fitness=2;Sprinting=3;Nimble=3,
+	}
+}

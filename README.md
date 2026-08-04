@@ -23,7 +23,9 @@ inability to sit still.
   everyone) from Sandbox Options — it appears pre-selected and locked in the
   character-creation screen.
 
-Works on both **Build 41** and **Build 42**.
+**Build 42 only.** Build 41 support was removed — B42 deleted the `TraitFactory`
+API this mod used to register the trait, along with the string form of
+`HasTrait`, so the two builds can no longer share one codebase.
 
 ---
 
@@ -42,9 +44,11 @@ You are considered **idle** when none of the above hold. Notes:
 - **Pausing / fast-forwarding does not advance the timer.** The countdown uses
   real wall-clock time and ignores large frame gaps (pause, loading screens).
 
-When the timer runs out, the character is set fully Knox-infected and killed, so
-the corpse reanimates through the game's normal infection pipeline. If your
-server's sandbox settings disable reanimation entirely, the player simply dies.
+When the timer runs out, the character is set Knox-infected and killed, so the
+corpse reanimates through the game's normal infection pipeline. (B42 removed
+`setInfectionLevel`, so the infection is flagged rather than forced to 99.9%.)
+If your server's sandbox settings disable reanimation entirely, the player
+simply dies.
 
 ---
 
@@ -74,8 +78,8 @@ ADHD.ForcedUsernames = ""             -- nobody; trait is optional
 For matched players the trait is auto-selected in the creation screen through
 the game's own trait-selection code (points and mutual exclusions included) and
 re-selected every frame — deselecting or resetting the build just snaps it
-back. A guaranteed backstop re-applies it when the character spawns even if
-the creation UI differs between builds.
+back. A guaranteed backstop re-applies it when the character spawns, in case
+the creation UI changes under a future patch.
 
 > **Single-player note:** there is no online username offline, so **any
 > non-empty value** (a name, or `*`) forces the trait in single-player. In
@@ -99,8 +103,10 @@ Then enable **ADHD** in the in-game Mods menu, and add it to your server's
 
 ### Folder layout
 
-The repo's `ADHD/` folder is shaped exactly like a Steam Workshop item, with
-both build layouts inside the mod:
+The repo's `ADHD/` folder is shaped exactly like a Steam Workshop item. All mod
+content lives in the `42/` version folder, which is how Build 42 mods are
+packaged — there is no root `mod.info`, so Build 41 will not load this mod at
+all:
 
 ```
 ADHD/                                  ← Workshop item folder
@@ -109,19 +115,18 @@ ADHD/                                  ← Workshop item folder
 └── Contents/
     └── mods/
         └── ADHD/                      ← the actual mod
-            ├── mod.info               # Build 41 manifest
-            ├── media/                 # Build 41 content
-            │   ├── sandbox-options.txt
-            │   ├── ui/Traits/trait_adhd.png   # 18x18 trait icon
-            │   └── lua/
-            │       ├── shared/Translate/EN/   # trait + sandbox strings
-            │       └── client/ADHD/           # trait logic (5 files)
-            └── 42/
-                ├── mod.info           # Build 42 manifest
-                └── media/             # Build 42 content (mirror of the above)
+            └── 42/                    ← Build 42 version folder
+                ├── mod.info           # manifest (versionMin=42.0)
+                └── media/
+                    ├── registries.lua              # registers the CharacterTrait
+                    ├── sandbox-options.txt
+                    ├── scripts/adhd_trait.txt      # the trait definition
+                    ├── ui/Traits/trait_adhd.png    # 18x18 trait icon
+                    └── lua/
+                        ├── shared/ADHD/            # trait lookup helper
+                        ├── shared/Translate/EN/    # trait + sandbox strings
+                        └── client/ADHD/            # trait logic (3 files)
 ```
-
-Build 42 automatically reads the `42/` subfolder; Build 41 reads the root.
 
 ---
 
@@ -129,11 +134,12 @@ Build 42 automatically reads the `42/` subfolder; Build 41 reads the root.
 
 | File | Responsibility |
 |---|---|
-| `ADHD_Trait.lua` (in `lua/shared/`) | Registers the trait (cost -6, so it lists under **Bad Traits** and grants points; flip the sign for a costly Good trait) with Fitness/Sprinting/Nimble XP boosts — these perk levels are the guaranteed movement-speed buff via the game's own speed formulas. Lives in `shared/` so dedicated servers register it too. |
+| `registries.lua` (in `media/`) | **Registers the `adhd:adhd` `CharacterTrait`.** B42 resolves a script's `CharacterTrait = adhd:adhd` line against `Registries.CHARACTER_TRAIT`, and nothing registers mod traits automatically. `media/registries.lua` is run before the scripts are parsed, which is the only window where the registration counts. Without it the trait script is dropped at load with `NullPointerException: ... "this.characterTraitType" is null` and the whole mod silently does nothing. |
+| `scripts/adhd_trait.txt` | **Defines the trait.** B42 traits are script objects (`character_trait_definition adhd:adhd`), not Lua registrations: cost -6, so it lists under **Bad Traits** and grants points (flip the sign for a costly Good trait), plus the Fitness/Sprinting/Nimble XP boosts that are the guaranteed movement-speed buff via the game's own speed formulas. |
+| `ADHD_Trait.lua` (in `lua/shared/`) | Resolves the script-defined trait to the `CharacterTrait` object the rest of the mod compares against, since B42's `character:hasTrait()` takes that object rather than a name. Lives in `shared/` so dedicated servers load it too. |
 | `ADHD_ActionSpeed.lua` | Wraps `ISBaseTimedAction:adjustMaxTime` to divide every timed action's duration by `ADHD.ActionSpeedMultiplier` (skips indefinite actions). |
-| `ADHD_MoveSpeed.lua` | Best-effort direct `setRunSpeedModifier` bump, guarded so it's harmless if a build lacks the API. |
 | `ADHD_IdleDeath.lua` | The idle timer: tracks activity, then screams (`MetaScream`), shouts (synced emote), rings the alarm (`AlarmClockRingingLoop`, stopped when you move) and shows the panic countdown; on timeout zombifies or explodes per `ADHD.DeathMode`. Only ever ticks for players controlled on the local machine. |
-| `ADHD_ForceTrait.lua` | Reads `ADHD.ForcedUsernames`; auto-selects the trait in the creation screen every frame (via vanilla `addTrait`) and enforces it on spawn. |
+| `ADHD_ForceTrait.lua` | Reads `ADHD.ForcedUsernames`; auto-selects the trait in the creation screen every frame (via vanilla `addTrait`) and enforces it on spawn with `getCharacterTraits():add()` plus `modifyTraitXPBoost`. |
 
 ---
 
@@ -158,9 +164,10 @@ Then in-game: **Main Menu → Workshop → the ADHD item → Upload**. Leave
 
 ## Known limitations
 
-- Not yet verified in-game on either build; treat as beta. Creation-UI internals
-  and the direct speed-modifier API may need per-build tweaks.
-- Reanimation depends on your sandbox reanimation setting being enabled.
+- Not yet verified in-game; treat as beta. The B42 port was checked against
+  42.20 game files (script format, trait/creation-screen APIs) but never run.
+- Reanimation depends on your sandbox reanimation setting being enabled, and on
+  a flagged Knox infection being enough to reanimate on death in B42.
 - Single-player forcing only supports `*` (no online username offline).
 
 ## License

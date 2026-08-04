@@ -1,6 +1,6 @@
 -- Timed actions run faster for ADHD characters (sandbox-configurable multiplier).
--- adjustMaxTime is the vanilla hook (B41.73+) every ISBaseTimedAction
--- subclass passes its duration through.
+-- adjustMaxTime is the vanilla hook every ISBaseTimedAction subclass passes its
+-- duration through.
 local ADHD_origAdjustMaxTime = ISBaseTimedAction.adjustMaxTime
 
 local function getMultiplier()
@@ -12,8 +12,7 @@ end
 function ISBaseTimedAction:adjustMaxTime(maxTime)
 	local t = ADHD_origAdjustMaxTime(self, maxTime)
 	-- t <= 0 means an indefinite action (e.g. sleeping/forever actions); leave those alone
-	if t and t > 0 and self.character and self.character.HasTrait
-			and self.character:HasTrait("ADHD") then
+	if t and t > 0 and ADHD.hasTrait(self.character) then
 		t = t / getMultiplier()
 	end
 	return t
