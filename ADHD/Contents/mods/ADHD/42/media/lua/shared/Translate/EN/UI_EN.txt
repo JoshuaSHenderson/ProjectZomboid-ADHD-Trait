@@ -1,4 +1,0 @@
-UI_EN = {
-	UI_trait_adhd = "ADHD",
-	UI_trait_adhddesc = "All timed actions complete several times faster.<br>Boosted Fitness, Sprinting and Nimble.<br>Cannot stand still: stop moving for too long and the character panics and dies.<br>An alarm and a spoken countdown warn you first.<br>Timings and what death means are set in Sandbox Options.",
-}
