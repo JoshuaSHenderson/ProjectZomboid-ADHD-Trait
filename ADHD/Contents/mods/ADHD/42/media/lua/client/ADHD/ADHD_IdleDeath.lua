@@ -32,7 +32,7 @@ local function getWarnMs()
 	return secs * 1000
 end
 
--- 1 = zombify (default), 2 = explode
+-- 1 = zombify (default), 2 = explode, 3 = combust
 local function getDeathMode()
 	return SandboxVars.ADHD and SandboxVars.ADHD.DeathMode or 1
 end
@@ -55,10 +55,15 @@ end
 
 -- alarm + scream + shout emote (arms up, head back — closest vanilla anim to
 -- freaking out; a true head-grab would need custom animation assets)
+-- No pcall around the Java calls. It reads like a safety net and is not one: a Java method that
+-- does not exist in the running build surfaces as a RuntimeException through the Lua bridge, which
+-- pcall does not catch — that is exactly how ADHD_MoveSpeed.lua crashed on 42.20, from inside a
+-- pcall. The real safety is verifying the methods exist; playEmote, playSound, getEmitter and
+-- splatBloodFloorBig were all checked against IsoPlayer/IsoGameCharacter in the 42.20 jar.
 local function startFreakout(player, s)
 	s.alarm = player:getEmitter():playSound(ALARM_SOUND)
 	player:playSound(SCREAM_SOUND)
-	pcall(function() player:playEmote("shout") end) -- emotes are MP-synced
+	player:playEmote("shout") -- MP-synced
 end
 
 local function stopAlarm(player, s)
@@ -79,12 +84,25 @@ end
 -- just the bang, a gore splatter, and a corpse that stays down (not infected).
 local function explode(player)
 	player:playSound(EXPLODE_SOUND)
-	pcall(function()
-		for _ = 1, 8 do
-			player:splatBloodFloorBig(0.6)
-		end
-	end)
+	-- splatBloodFloorBig() takes no arguments in 42.20; passing one finds no matching overload and
+	-- throws exactly like a missing method, which is what this call used to do.
+	for _ = 1, 8 do
+		player:splatBloodFloorBig()
+	end
 	player:Kill(player)
+end
+
+-- Catch fire and keep going. Unlike the other two modes this does not kill: the fire does that,
+-- and only if it is left to. Running around burning, dropping to the floor, or finding water are
+-- all still on the table, which is the point of the mode.
+--
+-- SetOnFire() rather than setOnFire(true): the capital one is the engine's own entry point, the
+-- same call vanilla's debug menu uses to light a character, so the fire manager registration,
+-- light source and burn damage are all wired up instead of a flag being flipped on its own.
+local function combust(player)
+	if player:isOnFire() then return end -- already burning; nothing to add
+	player:playSound(SCREAM_SOUND)
+	player:SetOnFire()
 end
 
 Events.OnCreatePlayer.Add(function(playerNum, player)
@@ -121,7 +139,10 @@ Events.OnPlayerUpdate.Add(function(player)
 	if idle >= killMs then
 		s.lastActive = now
 		stopAlarm(player, s)
-		if getDeathMode() == 2 then
+		local mode = getDeathMode()
+		if mode == 3 then
+			combust(player)
+		elseif mode == 2 then
 			explode(player)
 		else
 			zombify(player)

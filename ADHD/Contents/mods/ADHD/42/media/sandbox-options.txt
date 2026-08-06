@@ -20,7 +20,7 @@ option ADHD.WarnSeconds
 
 option ADHD.DeathMode
 {
-	type = enum, numValues = 2, default = 1,
+	type = enum, numValues = 3, default = 1,
 	page = ADHD, translation = ADHD_DeathMode,
 }
 
